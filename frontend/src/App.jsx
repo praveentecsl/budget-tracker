@@ -31,7 +31,7 @@ const App = () => {
         <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">Budget Tracker Login</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email for me</label>
             <input
               id="email"
               type="email"
