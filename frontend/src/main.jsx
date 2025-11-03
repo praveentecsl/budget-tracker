@@ -6,6 +6,6 @@ import AppN from './App_new.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AppN />
   </StrictMode>,
 )

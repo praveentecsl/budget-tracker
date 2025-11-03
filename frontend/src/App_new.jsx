@@ -8,6 +8,7 @@ const App = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
+    //before sending the data to backend it ensure the email is precent,valid and passwrd is exist and strong
     const validate = () => {
         setError("");
         if (!email) return "Email is required";
@@ -30,7 +31,7 @@ const App = () => {
         setError("");
         setSuccess("");
         try {
-            const res = await fetch('/api/login', {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, remember })
