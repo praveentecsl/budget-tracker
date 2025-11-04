@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 app.get("/", (req, res) => {
-  res.send("praveen chandeepa");
+  res.send("praveen chandeepa weerasinghe");
 });
 
 app.post("/api/register", async (req, res) => {
@@ -49,7 +49,7 @@ app.post("/api/register", async (req, res) => {
     const { email, password } = req.body;
     const user = new User({ email, password });
     await user.save();
-    res.status(201).json({ message: "User registered successfully", user });
+    res.status(201).json({ message: "User registered successfully123", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
