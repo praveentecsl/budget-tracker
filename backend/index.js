@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(
@@ -24,6 +26,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/mydb";
+const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key";
 
 mongoose
   .connect(mongoURL, {
@@ -47,11 +50,37 @@ app.get("/", (req, res) => {
 app.post("/api/register", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = new User({ email, password });
+    // 1 Check if fields are given
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    //Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "user already exists" });
+    }
+
+    //Encrypt password using bcrypt
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    //save the user with the hashed password
+    const user = new User({ email, password: hashPassword });
+
+    //const user = new User({ email, password });
     await user.save();
-    res.status(201).json({ message: "User registered successfully123", user });
+    res
+      .status(201)
+      .json({
+        message: "User registered successfully123",
+        token,
+        user: { id: user._id, email: user.email },
+      });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: "server error", error: err.message });
   }
 });
 
