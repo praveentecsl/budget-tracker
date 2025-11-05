@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/mydb";
+const mongoURL = process.env.MONGO_URL || "mongodb://localhost:2727/mydbp";
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key";
 
 mongoose
@@ -70,15 +70,18 @@ app.post("/api/register", async (req, res) => {
     //save the user with the hashed password
     const user = new User({ email, password: hashPassword });
 
+    //generate JWT
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
     //const user = new User({ email, password });
     await user.save();
-    res
-      .status(201)
-      .json({
-        message: "User registered successfully123",
-        token,
-        user: { id: user._id, email: user.email },
-      });
+    res.status(201).json({
+      message: "User registered successfully123",
+      token,
+      user: { id: user._id, email: user.email },
+    });
   } catch (err) {
     res.status(500).json({ message: "server error", error: err.message });
   }
