@@ -40,7 +40,7 @@ const App = () => {
             const data = await res.json().catch(() => ({}));
             if (res.ok) {
                 if (data.token) {
-                    try { localStorage.setItem('bt_auth_token', data.token); } catch (e) { /* ignore */ }
+                    try { localStorage.setItem('bt_auth_tokenyo', data.token); } catch (e) { /* ignore */ }
                 }
                 setSuccess(data.message || 'Login successful');
                 setError("");
