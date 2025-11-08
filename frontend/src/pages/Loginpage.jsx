@@ -143,7 +143,7 @@ const App = () => {
                     {/* RIGHT: Form */}
                     <div className="p-8 md:p-12 bg-white/90 backdrop-blur-sm">
                         <div className="mb-8">
-                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome back</h1>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome</h1>
                             <p className="text-sm text-gray-600">Sign in to your account to continue</p>
                         </div>
 
@@ -258,6 +258,14 @@ const App = () => {
                                         <span className="text-sm text-gray-700 font-medium">GitHub</span>
                                     </button>
                                 </div>
+                            </div>
+                            <div className="mt-6 text-center">
+                                <p className="text-sm text-gray-600">
+                                    Don't have an account?{' '}
+                                    <a href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline">
+                                        Create an account
+                                    </a>
+                                </p>
                             </div>
                         </form>
                     </div>
