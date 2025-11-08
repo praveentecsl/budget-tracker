@@ -47,6 +47,7 @@ app.get("/", (req, res) => {
   res.send("praveen chandeepa weerasinghe");
 });
 
+//=======================================signup====================================================================
 app.post("/api/register", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -84,6 +85,48 @@ app.post("/api/register", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "server error", error: err.message });
+  }
+});
+
+//==============================================login=================================================
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if both fields are provided
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Compare entered password with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // Send success response
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: { id: user._id, email: user.email },
+    });
+
+    //==================================================================================================
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 

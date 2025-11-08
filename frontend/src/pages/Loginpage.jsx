@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const Signup = () => {
+const App = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
@@ -227,7 +227,7 @@ const Signup = () => {
                                             <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
                                         </svg>
                                     )}
-                                    <span>{loading ? 'Signing in...' : 'Sign in'}</span>
+                                    <span>{loading ? 'loading ...' : 'Log in'}</span>
                                 </button>
                             </div>
 
@@ -267,4 +267,4 @@ const Signup = () => {
     );
 }
 
-export default Signup
+export default App
