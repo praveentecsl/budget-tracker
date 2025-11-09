@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -7,6 +9,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -27,6 +30,7 @@ const Login = () => {
                     localStorage.setItem("bt_auth_token", data.token);
                 }
                 setSuccess("Login successful!");
+                navigate('/budget');
             } else {
                 setError(data.message || "Invalid credentials");
             }
@@ -157,8 +161,8 @@ const Login = () => {
                             type="submit"
                             disabled={loading}
                             className={`w-full flex justify-center items-center gap-2 px-4 py-3 rounded-lg text-white font-semibold transition-all duration-200 transform ${loading
-                                    ? "bg-indigo-400 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[1.02] hover:shadow-lg"
+                                ? "bg-indigo-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-[1.02] hover:shadow-lg"
                                 }`}
                         >
                             {loading && (

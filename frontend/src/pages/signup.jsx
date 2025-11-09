@@ -258,6 +258,17 @@ const Signup = () => {
                                         <span className="text-sm text-gray-700 font-medium">GitHub</span>
                                     </button>
                                 </div>
+                                <div>
+                                    <p className="text-sm text-gray-600 text-center mt-6">
+                                        continue by {" "}
+                                        <a
+                                            href="/login"
+                                            className="text-indigo-600 font-semibold hover:underline"
+                                        >
+                                            Login
+                                        </a>
+                                    </p>
+                                </div>
                             </div>
                         </form>
                     </div>
