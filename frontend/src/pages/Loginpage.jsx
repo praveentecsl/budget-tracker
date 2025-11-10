@@ -200,6 +200,15 @@ const Login = () => {
                                 Sign up
                             </a>
                         </p>
+                        <p className="text-sm text-gray-600 text-center mt-6">
+
+                            <a
+                                href="/"
+                                className="text-gray-600 font-semibold hover:underline"
+                            >
+                                cancel
+                            </a>
+                        </p>
                     </form>
                 </div>
             </div>
