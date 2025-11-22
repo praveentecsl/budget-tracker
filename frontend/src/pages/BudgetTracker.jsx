@@ -13,8 +13,10 @@ import {
     UserGroupIcon,
     DocumentTextIcon,
     ArrowUpTrayIcon,
-    PrinterIcon
+    PrinterIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
+import jsPDF from 'jspdf';
 import '../styles/BudgetTracker.css';
 
 const BudgetTracker = () => {
@@ -92,6 +94,7 @@ const BudgetTracker = () => {
     });
 
     const [autosave, setAutosave] = useState(true);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     // Load data from localStorage on component mount
     useEffect(() => {
@@ -175,6 +178,10 @@ const BudgetTracker = () => {
 
     // Export functionality
     const handleExport = () => {
+        setShowExportModal(true);
+    };
+
+    const handleExportJSON = () => {
         const dataStr = JSON.stringify(budgetData, null, 2);
         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
@@ -184,6 +191,115 @@ const BudgetTracker = () => {
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
+        setShowExportModal(false);
+    };
+
+    const handleExportPDF = () => {
+        const pdf = new jsPDF();
+        const currentDate = new Date().toLocaleDateString();
+
+        // PDF Title
+        pdf.setFontSize(20);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Budget Report', 20, 20);
+
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`Generated on: ${currentDate}`, 20, 30);
+
+        let yPos = 50;
+
+        // Income Section
+        pdf.setFontSize(16);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('INCOME', 20, yPos);
+        yPos += 10;
+
+        pdf.setFontSize(11);
+        pdf.setFont(undefined, 'normal');
+
+        incomeCategories.forEach(category => {
+            const value = budgetData.income[category.key];
+            if (value > 0) {
+                pdf.text(`${category.label}: $${value.toLocaleString()}`, 25, yPos);
+                yPos += 7;
+            }
+        });
+
+        // Custom income items
+        budgetData.income.custom.forEach(item => {
+            if (item.value > 0) {
+                pdf.text(`${item.name}: $${item.value.toLocaleString()}`, 25, yPos);
+                yPos += 7;
+            }
+        });
+
+        pdf.setFont(undefined, 'bold');
+        pdf.text(`Total Income: $${totalIncome.toLocaleString()}`, 25, yPos + 5);
+        yPos += 20;
+
+        // Expenses Section
+        pdf.setFontSize(16);
+        pdf.text('EXPENSES', 20, yPos);
+        yPos += 10;
+
+        pdf.setFontSize(11);
+        pdf.setFont(undefined, 'normal');
+
+        expenseCategories.forEach(category => {
+            const categoryTotal = calculateTotal(budgetData.expenses[category.key]);
+            if (categoryTotal > 0) {
+                pdf.setFont(undefined, 'bold');
+                pdf.text(`${category.label}: $${categoryTotal.toLocaleString()}`, 25, yPos);
+                yPos += 7;
+
+                pdf.setFont(undefined, 'normal');
+                category.items.forEach(item => {
+                    const value = budgetData.expenses[category.key][item.key];
+                    if (value > 0) {
+                        pdf.text(`  ${item.label}: $${value.toLocaleString()}`, 30, yPos);
+                        yPos += 6;
+                    }
+                });
+
+                // Custom items
+                if (budgetData.expenses[category.key].custom) {
+                    budgetData.expenses[category.key].custom.forEach(item => {
+                        if (item.value > 0) {
+                            pdf.text(`  ${item.name}: $${item.value.toLocaleString()}`, 30, yPos);
+                            yPos += 6;
+                        }
+                    });
+                }
+                yPos += 5;
+            }
+
+            // Add new page if needed
+            if (yPos > 250) {
+                pdf.addPage();
+                yPos = 20;
+            }
+        });
+
+        // Summary
+        yPos += 10;
+        pdf.setFontSize(16);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('SUMMARY', 20, yPos);
+        yPos += 10;
+
+        pdf.setFontSize(12);
+        pdf.text(`Total Income: $${totalIncome.toLocaleString()}`, 25, yPos);
+        yPos += 8;
+        pdf.text(`Total Expenses: $${totalExpenses.toLocaleString()}`, 25, yPos);
+        yPos += 8;
+
+        const netAmountText = netAmount >= 0 ? 'Money Left Over' : 'Over Budget';
+        pdf.text(`${netAmountText}: $${Math.abs(netAmount).toLocaleString()}`, 25, yPos);
+
+        const fileName = `budget_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        setShowExportModal(false);
     };
 
     // Category configurations
@@ -525,8 +641,8 @@ const BudgetTracker = () => {
                         <div className="sticky top-8">
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                                 <div className={`${netAmount >= 0
-                                        ? 'bg-gradient-to-r from-green-500 to-green-600'
-                                        : 'bg-gradient-to-r from-red-500 to-red-600'
+                                    ? 'bg-gradient-to-r from-green-500 to-green-600'
+                                    : 'bg-gradient-to-r from-red-500 to-red-600'
                                     } px-6 py-4`}>
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0">
@@ -602,6 +718,60 @@ const BudgetTracker = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Export Modal */}
+            {showExportModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">Export Budget Data</h3>
+                            <button
+                                onClick={() => setShowExportModal(false)}
+                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                            >
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <p className="text-sm text-gray-600 mb-6">
+                                Choose how you'd like to export your budget data:
+                            </p>
+
+                            <div className="space-y-4">
+                                <button
+                                    onClick={handleExportPDF}
+                                    className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                                >
+                                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clipRule="evenodd" />
+                                    </svg>
+                                    Export as PDF
+                                </button>
+
+                                <button
+                                    onClick={handleExportJSON}
+                                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                                >
+                                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd" />
+                                    </svg>
+                                    Export as JSON
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-3 bg-gray-50 rounded-b-lg">
+                            <button
+                                onClick={() => setShowExportModal(false)}
+                                className="w-full px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
