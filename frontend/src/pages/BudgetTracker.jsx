@@ -197,112 +197,182 @@ const BudgetTracker = () => {
     const handleExportPDF = () => {
         const pdf = new jsPDF();
         const currentDate = new Date().toLocaleDateString();
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
 
-        // PDF Title
-        pdf.setFontSize(20);
+        // Standard header
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(18);
         pdf.setFont(undefined, 'bold');
-        pdf.text('Budget Report', 20, 20);
+        pdf.text('MONTHLY BUDGET WORKSHEET', pageWidth / 2, 20, { align: 'center' });
 
-        pdf.setFontSize(12);
+        pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
-        pdf.text(`Generated on: ${currentDate}`, 20, 30);
+        pdf.text(`Date: ${currentDate}`, 20, 35);
 
-        let yPos = 50;
+        // Draw a line under header
+        pdf.line(20, 40, pageWidth - 20, 40);
 
-        // Income Section
-        pdf.setFontSize(16);
-        pdf.setFont(undefined, 'bold');
-        pdf.text('INCOME', 20, yPos);
-        yPos += 10;
+        let yPos = 55;
 
-        pdf.setFontSize(11);
-        pdf.setFont(undefined, 'normal');
+        // Helper function to draw table rows
+        const drawTableRow = (label, amount, yPosition, isHeader = false, isSubItem = false, isTotal = false) => {
+            // Check if we need a new page
+            if (yPosition > pageHeight - 30) {
+                pdf.addPage();
+                yPosition = 20;
+            }
 
+            if (isHeader) {
+                pdf.setFont(undefined, 'bold');
+                pdf.setFontSize(12);
+                // Draw line above section with more space
+                pdf.line(20, yPosition - 8, pageWidth - 20, yPosition - 8);
+            } else {
+                pdf.setFont(undefined, 'normal');
+                pdf.setFontSize(10);
+            }
+
+            if (isTotal) {
+                pdf.setFont(undefined, 'bold');
+                // Draw line above total with more space
+                pdf.line(20, yPosition - 5, pageWidth - 20, yPosition - 5);
+            }
+
+            const xPos = isSubItem ? 35 : 20;
+            pdf.text(label, xPos, yPosition);
+
+            if (amount !== null) {
+                const amountText = `$${amount.toLocaleString()}`;
+                const textWidth = pdf.getTextWidth(amountText);
+                pdf.text(amountText, pageWidth - 25 - textWidth, yPosition);
+            }
+
+            // Increased spacing for better readability
+            return yPosition + (isHeader ? 18 : isTotal ? 15 : 14);
+        };
+
+        // INCOME SECTION
+        yPos = drawTableRow('INCOME', null, yPos, true);
+
+        let hasIncomeItems = false;
         incomeCategories.forEach(category => {
             const value = budgetData.income[category.key];
             if (value > 0) {
-                pdf.text(`${category.label}: $${value.toLocaleString()}`, 25, yPos);
-                yPos += 7;
+                yPos = drawTableRow(category.label, value, yPos, false, true);
+                hasIncomeItems = true;
             }
         });
 
         // Custom income items
         budgetData.income.custom.forEach(item => {
             if (item.value > 0) {
-                pdf.text(`${item.name}: $${item.value.toLocaleString()}`, 25, yPos);
-                yPos += 7;
+                yPos = drawTableRow(item.name, item.value, yPos, false, true);
+                hasIncomeItems = true;
             }
         });
 
-        pdf.setFont(undefined, 'bold');
-        pdf.text(`Total Income: $${totalIncome.toLocaleString()}`, 25, yPos + 5);
+        if (!hasIncomeItems) {
+            yPos = drawTableRow('No income recorded', 0, yPos, false, true);
+        }
+
+        // Total Income
+        yPos += 8;
+        yPos = drawTableRow('TOTAL INCOME', totalIncome, yPos, false, false, true);
         yPos += 20;
 
-        // Expenses Section
-        pdf.setFontSize(16);
-        pdf.text('EXPENSES', 20, yPos);
-        yPos += 10;
+        // EXPENSES SECTION
+        yPos = drawTableRow('EXPENSES', null, yPos, true);
 
-        pdf.setFontSize(11);
-        pdf.setFont(undefined, 'normal');
-
+        let hasExpenseItems = false;
         expenseCategories.forEach(category => {
             const categoryTotal = calculateTotal(budgetData.expenses[category.key]);
             if (categoryTotal > 0) {
-                pdf.setFont(undefined, 'bold');
-                pdf.text(`${category.label}: $${categoryTotal.toLocaleString()}`, 25, yPos);
-                yPos += 7;
+                // Category header
+                yPos = drawTableRow(category.label.toUpperCase(), categoryTotal, yPos, false, false, false);
 
-                pdf.setFont(undefined, 'normal');
+                // Category items
+                let categoryHasItems = false;
                 category.items.forEach(item => {
                     const value = budgetData.expenses[category.key][item.key];
                     if (value > 0) {
-                        pdf.text(`  ${item.label}: $${value.toLocaleString()}`, 30, yPos);
-                        yPos += 6;
+                        yPos = drawTableRow(item.label, value, yPos, false, true);
+                        categoryHasItems = true;
+                        hasExpenseItems = true;
                     }
                 });
 
-                // Custom items
+                // Custom items for category
                 if (budgetData.expenses[category.key].custom) {
                     budgetData.expenses[category.key].custom.forEach(item => {
                         if (item.value > 0) {
-                            pdf.text(`  ${item.name}: $${item.value.toLocaleString()}`, 30, yPos);
-                            yPos += 6;
+                            yPos = drawTableRow(item.name, item.value, yPos, false, true);
+                            categoryHasItems = true;
+                            hasExpenseItems = true;
                         }
                     });
                 }
-                yPos += 5;
-            }
 
-            // Add new page if needed
-            if (yPos > 250) {
-                pdf.addPage();
-                yPos = 20;
+                yPos += 10; // More space between categories
             }
         });
 
-        // Summary
-        yPos += 10;
-        pdf.setFontSize(16);
-        pdf.setFont(undefined, 'bold');
-        pdf.text('SUMMARY', 20, yPos);
-        yPos += 10;
+        if (!hasExpenseItems) {
+            yPos = drawTableRow('No expenses recorded', 0, yPos, false, true);
+        }
 
-        pdf.setFontSize(12);
-        pdf.text(`Total Income: $${totalIncome.toLocaleString()}`, 25, yPos);
+        // Total Expenses
         yPos += 8;
-        pdf.text(`Total Expenses: $${totalExpenses.toLocaleString()}`, 25, yPos);
+        yPos = drawTableRow('TOTAL EXPENSES', totalExpenses, yPos, false, false, true);
+        yPos += 25;
+
+        // SUMMARY SECTION
+        yPos = drawTableRow('SUMMARY', null, yPos, true);
+
+        yPos = drawTableRow('Total Monthly Income', totalIncome, yPos);
+        yPos = drawTableRow('Total Monthly Expenses', totalExpenses, yPos);
+
         yPos += 8;
+        const netAmountLabel = netAmount >= 0 ? 'Net Income (Surplus)' : 'Net Loss (Deficit)';
+        yPos = drawTableRow(netAmountLabel, Math.abs(netAmount), yPos, false, false, true);
 
-        const netAmountText = netAmount >= 0 ? 'Money Left Over' : 'Over Budget';
-        pdf.text(`${netAmountText}: $${Math.abs(netAmount).toLocaleString()}`, 25, yPos);
+        // Budget Analysis
+        yPos += 20;
+        yPos = drawTableRow('BUDGET ANALYSIS', null, yPos, true);
 
-        const fileName = `budget_report_${new Date().toISOString().split('T')[0]}.pdf`;
+        const savingsPercentage = totalIncome > 0 ? ((netAmount / totalIncome) * 100) : 0;
+        if (netAmount >= 0) {
+            yPos = drawTableRow(`Savings Rate: ${savingsPercentage.toFixed(1)}%`, null, yPos);
+            if (savingsPercentage >= 20) {
+                yPos = drawTableRow('Status: Excellent savings rate', null, yPos);
+            } else if (savingsPercentage >= 10) {
+                yPos = drawTableRow('Status: Good savings rate', null, yPos);
+            } else {
+                yPos = drawTableRow('Status: Consider increasing savings', null, yPos);
+            }
+        } else {
+            yPos = drawTableRow(`Over-spending: ${Math.abs(savingsPercentage).toFixed(1)}%`, null, yPos);
+            yPos = drawTableRow('Status: Review and reduce expenses', null, yPos);
+        }
+
+        // Expense breakdown by percentage
+        yPos += 15;
+        pdf.setFontSize(9);
+        pdf.setFont(undefined, 'italic');
+        pdf.text('Note: Review categories with highest percentages for potential savings', 20, yPos);
+
+        // Footer
+        yPos = pageHeight - 20;
+        pdf.line(20, yPos - 5, pageWidth - 20, yPos - 5);
+        pdf.setFontSize(8);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('Budget Tracker Report', 20, yPos);
+        pdf.text(`Page 1 - Generated ${currentDate}`, pageWidth - 80, yPos);
+
+        const fileName = `monthly_budget_${new Date().toISOString().split('T')[0]}.pdf`;
         pdf.save(fileName);
         setShowExportModal(false);
-    };
-
-    // Category configurations
+    };    // Category configurations
     const incomeCategories = [
         { key: 'salary', label: 'Salary/Wage (after tax)', icon: CurrencyDollarIcon },
         { key: 'partTime', label: 'Part-time/Casual work', icon: CurrencyDollarIcon },
