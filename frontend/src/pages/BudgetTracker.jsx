@@ -734,7 +734,7 @@ const BudgetTracker = () => {
                                     </div>
 
                                     <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                                        <span className="text-sm font-medium text-red-800">Total Expenses</span>
+                                        <span className="text-sm font-medium text-red-800">Total Expensos</span>
                                         <span className="text-lg font-bold text-red-900">
                                             ${totalExpenses.toLocaleString()}
                                         </span>
