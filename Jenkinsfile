@@ -41,7 +41,15 @@ pipeline {
                 """
             }
         }
+
+        stage('deploy with ansible'){
+            steps{
+                sh 'ansible-playbook /var/lib/jenkins/ansible/deploy.yml'
+            }
+        }
     }
+
+    
 
     post {
         always {
