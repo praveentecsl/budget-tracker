@@ -98,7 +98,7 @@ const Landing = () => {
 
                         <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
                             Take control of your finances with intelligent expense tracking,
-                            visual insights, and personalized budget goals...
+                            visual insights, and personalized budget goals....
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
