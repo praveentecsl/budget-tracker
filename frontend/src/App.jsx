@@ -1,9 +1,9 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Signup from './pages/Signup'
-import Login from './pages/Loginpage'
-import Budget from './pages/BudgetTracker'
-import Land from './pages/Landing'
+import Signup from './pages/Signup.jsx'
+import Login from './pages/Loginpage.jsx'
+import Budget from './pages/BudgetTracker.jsx'
+import Land from './pages/Landing.jsx'
 
 
 const App = () => {
