@@ -10,7 +10,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      "http://54.89.155.245:5000",
+      "http://54.89.155.245:3000",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
