@@ -115,7 +115,7 @@ const Signup = () => {
                             </div>
                             <h2 className="text-4xl font-bold mb-3 drop-shadow-lg">Budget Tracker</h2>
                             <p className="text-base opacity-95 leading-relaxed mb-2">Securely track your income and expenses.</p>
-                            <p className="text-sm opacity-80">Sign in to continue to your dashboard.</p>
+                            <p className="text-sm opacity-80">Sign in to continue to your dashboard..</p>
 
                             <div className="mt-10 space-y-4 text-left">
                                 <div className="flex items-center gap-3 group">
