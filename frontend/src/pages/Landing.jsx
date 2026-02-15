@@ -90,7 +90,7 @@ const Landing = () => {
                         </div>
 
                         <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-                            Smart Budget
+                            changed the text
                             <span className="block bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
                                 Management
                             </span>
